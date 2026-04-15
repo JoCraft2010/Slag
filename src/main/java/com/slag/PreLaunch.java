@@ -4,17 +4,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.foreign.Arena;
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.Linker;
-import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
-import java.lang.foreign.ValueLayout;
-import java.lang.invoke.MethodHandle;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.NoSuchElementException;
+
+import com.slag.natives.SlangBinder;
+import com.slag.natives.SlangNative;
 
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 
@@ -60,18 +56,8 @@ public class PreLaunch implements PreLaunchEntrypoint {
             System.load(Slag.TEMP_DIR.resolve(lib).toAbsolutePath().toString());
 
         SymbolLookup lib = SymbolLookup.libraryLookup(Slag.TEMP_DIR.resolve(libs[libs.length - 1]), Arena.global());
-        Linker linker = Linker.nativeLinker();
+        Slag.NATIVE = SlangBinder.bind(SlangNative.class, lib);
 
-        MemorySegment symbol = lib.findOrThrow("spGetBuildTagString");
-        FunctionDescriptor descriptor = FunctionDescriptor.of(ValueLayout.ADDRESS);
-        MethodHandle spGetBuildTagString = linker.downcallHandle(symbol, descriptor);
-
-        try {
-            MemorySegment result = (MemorySegment) spGetBuildTagString.invokeExact();
-            String buildTag = result.reinterpret(Long.MAX_VALUE).getString(0, StandardCharsets.UTF_8);
-            Slag.LOGGER.info("Slang version: " + buildTag);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        HealthCheck.checkSlang();
     }
 }
