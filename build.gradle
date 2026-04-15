@@ -28,11 +28,11 @@ dependencies {
 }
 
 def targetPlatforms = [
-	"windows-x86_64": "slang.dll",
-	"linux-x86_64": "libslang.so"
+	"windows-x86_64": ["slang.lib", "slang-compiler.lib", "slang-rt.lib"],
+	"linux-x86_64": ["libslang-compiler.so.0.${project.slang_version}", "libslang-rt.so.0.${project.slang_version}", "libslang-llvm.so"]
 ]
 
-targetPlatforms.each { platform, libName ->
+targetPlatforms.each { platform, libNames ->
     def downloadTask = tasks.register("downloadSlang_${platform}") {
         def zipFile = file("${buildDir}/tmp/slang-${platform}.zip")
         outputs.file(zipFile)
@@ -51,13 +51,16 @@ targetPlatforms.each { platform, libName ->
         dependsOn downloadTask
 
         def zipFile = file("${buildDir}/tmp/slang-${platform}.zip")
-
         from(zipTree(zipFile)) {
-            include "**/$libName"
+            include libNames.collect { "**/$it" }
+
+			rename { String fileName ->
+                fileName.replaceAll(/\.(so|dll|lib)\..*$/, '.$1')
+            }
+
             eachFile { it.relativePath = new RelativePath(true, it.name) }
             includeEmptyDirs = false
         }
-
         into layout.buildDirectory.dir("natives")
     }
 }

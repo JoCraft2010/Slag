@@ -22,6 +22,9 @@
 		],
 		"client": [
 			"com.slag.client.SlagClient"
+		],
+		"preLaunch": [
+			"com.slag.PreLaunch"
 		]
 	},
 	"mixins": [
