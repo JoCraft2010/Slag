@@ -12,7 +12,7 @@ public class HealthCheck {
     }
 
     public static void checkSlang() {
-        if (Slag.NATIVE._Z27slang_getEmbeddedCoreModulev() == null)
+        if (Slag.NATIVE.slang_getEmbeddedCoreModule() == null)
             throw new RuntimeException("Slang core module could not be loaded.");
 
         String version = Slag.NATIVE.spGetBuildTagString();

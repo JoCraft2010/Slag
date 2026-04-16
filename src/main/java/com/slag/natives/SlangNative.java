@@ -10,5 +10,6 @@ public interface SlangNative {
 
     String spGetBuildTagString();
 
-    MemorySegment _Z27slang_getEmbeddedCoreModulev();
+    @NativeSymbol("_Z27slang_getEmbeddedCoreModulev")
+    MemorySegment slang_getEmbeddedCoreModule();
 }

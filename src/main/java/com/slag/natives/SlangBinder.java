@@ -15,7 +15,11 @@ public class SlangBinder {
     public static <T> T bind(Class<T> clazz, SymbolLookup lookup) {
         return clazz
                 .cast(Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { clazz }, (proxy, method, args) -> {
-                    MemorySegment symbol = lookup.findOrThrow(method.getName());
+                    @SuppressWarnings("null")
+                    NativeSymbol symbolAnno = method.getAnnotation(NativeSymbol.class);
+                    String symbolName = (symbolAnno != null) ? symbolAnno.value() : method.getName();
+
+                    MemorySegment symbol = lookup.findOrThrow(symbolName);
 
                     Class<?>[] params = method.getParameterTypes();
                     MemoryLayout[] argLayouts = new MemoryLayout[params.length];
